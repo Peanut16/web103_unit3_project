@@ -4,15 +4,17 @@ import locationData from "../data/locations.js";
 
 const createLocationsTable = async () => {
     const createLocationsTableQuery = `
-    DROP TABLE IF EXISts locations;
-    
+    DROP TABLE IF EXISTS events;
+    DROP TABLE IF EXISTS locations;
+
     CREATE TABLE locations (
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT
     );
     `
     try {
-        const res = await pool.query(createTableQuery)
+        const res = await pool.query(createLocationsTableQuery)
         console.log('🎉 locations table created successfully')
     } catch (err) {
         console.error('⚠️ error creating locations table', err)
@@ -21,8 +23,6 @@ const createLocationsTable = async () => {
 
 const createEventsTable = async () => {
     const createEventsTableQuery = `
-    DROP TABLE IF EXISTS events
-    
     CREATE TABLE events (
       id SERIAL PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
@@ -33,7 +33,7 @@ const createEventsTable = async () => {
     );`
 
     try {
-        const res = await pool.query(createTableQuery)
+        const res = await pool.query(createEventsTableQuery)
         console.log('🎉 events table created successfully')
     } catch (err) {
         console.error('⚠️ error creating events table', err)
@@ -53,12 +53,12 @@ const seedLocationTable = async () => {
             location.description
         ]
 
-        pool.query(insertQuery, value, (err, res) => {
+        pool.query(insertQuery, values, (err, res) => {
             if (err) {
                 console.error('⚠️ error inserting location', err)
                 return
             }
-            console.log(`✅ ${location.title} added successfully`)
+            console.log(`✅ ${location.name} added successfully`)
         })
     })
 }
@@ -68,7 +68,7 @@ const seedEventsTable = async () => {
 
     eventsData.forEach((event) => {
         const insertQuery = {
-            text: "INSERT INTO events (title, description, date, time, location) VALUES ($1, $2, $3, $4, $5)"
+            text: "INSERT INTO events (title, description, date, time, location_id) VALUES ($1, $2, $3, $4, $5)"
         }
 
         const values = [
@@ -76,10 +76,10 @@ const seedEventsTable = async () => {
             event.description,
             event.date,
             event.time,
-            event.location
+            event.location_id
         ]
 
-        pool.query(insertQuery, value, (err, res) => {
+        pool.query(insertQuery, values, (err, res) => {
             if (err) {
                 console.error('⚠️ error inserting event', err)
                 return
@@ -89,5 +89,9 @@ const seedEventsTable = async () => {
     });
 }
 
-seedLocationTable()
-seedEventsTable()
+const run = async () => {
+    await seedLocationTable()
+    await seedEventsTable()
+}
+
+run()

@@ -1,26 +1,26 @@
 import { pool } from '../config/database.js'
 
 const getEvents = async (req, res) => {
-    try {
-        const results = await pool.query('SELECT * FROM events ORDER BY id ASC')
-        res.status(200).json(results.row)
-    } catch (error) {
-        res.status(409).json( { error: error.message })
-    }
+  try {
+    const results = await pool.query('SELECT * FROM events ORDER BY id ASC')
+    res.status(200).json(results.rows) // fix: rows not row
+  } catch (error) {
+    res.status(409).json({ error: error.message })
+  }
 }
 
-const getEventByID = async (req, res) => {
-    try {
-        const selectQuery = 'SELECT title, description, date, time, location FROM events WHERE id=$1'
-        const eventId = req.params.eventId
-        const results = await pool.query(selectQuery, [eventId])
-        res.status(200).json(results.rows[0])
-    } catch (error) {
-        
-    }
+const getEventsByID = async (req, res) => {
+  try {
+    const selectQuery = 'SELECT * FROM events WHERE location_id=$1'
+    const { location_id } = req.params // fix: destructure from req.params
+    const results = await pool.query(selectQuery, [location_id])
+    res.status(200).json(results.rows) // fix: rows not rows[0], we want all events
+  } catch (error) {
+    res.status(409).json({ error: error.message })
+  }
 }
 
 export default {
-    getEvents,
-    getEventByID
+  getEvents,
+  getEventsByID
 }
